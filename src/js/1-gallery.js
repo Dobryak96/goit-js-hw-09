@@ -1,11 +1,7 @@
-'use strict';
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
-
 const images = [
   {
     preview:
-      'https://cdn.pixabay.com/photo/2019/05/14/16/43/rchids-4202820__340.jpg',
+      'https://cdn.pixabay.com/photo/2019/05/14/16/43/rchids-4202820__480.jpg',
     original:
       'https://cdn.pixabay.com/photo/2019/05/14/16/43/rchids-4202820_1280.jpg',
     description: 'Hokkaido Flower',
@@ -67,26 +63,41 @@ const images = [
     description: 'Lighthouse Coast Sea',
   },
 ];
-const gallery = document.querySelector('.gallery');
-// console.log(gallery);
-const galleryItem = images
-  .map(
-    image =>
-      `<li class="gallery-item">
-	<a class="gallery-link" href="${image.original}">
-		<img 
-			class="gallery-image" 
-			src="${image.preview}" 
-			alt="${image.description}" 
-			/>
-	</a>
-</li>`
-  )
-  .join('');
-gallery.insertAdjacentHTML('afterbegin', galleryItem);
+// Додаємо бібліотеку SimpleLightbox
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 
-const lightbox = new SimpleLightbox('.gallery a', {
-  captionsData: 'alt',
-  captionsDelay: 250,
+// Знаходимо елемент списку та створюємо розмітку галереї
+const gallery = document.querySelector('.gallery');
+
+function galleryTemplate({preview, original, description}) {
+    return `<li class="gallery-item">
+  <a class="gallery-link" href=${original}>
+    <img
+      class="gallery-image"
+      src=${preview}
+      alt=${description}
+       />
+  </a>
+</li>`;
+};
+
+function galleriesTemplate(arr) {
+  return arr.map(galleryTemplate).join('\n');
+};
+const markup = galleriesTemplate(images);
+gallery.innerHTML = markup;
+
+// Налаштовуємо відображення підписів до зображень та інших властивостей options
+const lightbox = new SimpleLightbox('.gallery-item a', {
+    captions: true,
+    captionSelector: 'img',
+    captionType: 'attr',
+    captionsData: 'alt',
+    captionPosition: 'bottom',
+    captionDelay: 250,
+    animationSpeed: 300,
+    widthRatio: 1,
+    heightRatio: 0.95,
+    disableRightClick: true,
 });
-console.log(lightbox);

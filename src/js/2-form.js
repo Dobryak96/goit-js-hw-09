@@ -1,71 +1,50 @@
-'use strict';
-import validator from 'validator';
+let formData = {
+    email: "",
+    message: "",
+};
+// Знаходимо елементи та додаємо класи для стилізаціі
+const labels = document.querySelectorAll('label');
+labels.forEach(label => { label.classList.add('form-label') });
+const input = document.querySelector('input');
+input.classList.add('form-input');
+const text = document.querySelector('textarea');
+text.classList.add('form-message');
+const button = document.querySelector('button');
+button.classList.add('form-btn');
 
-const STORAGE_KEY = 'feedback-form-state';
+// Створюємо функціі додавання даних у локальне сховище та їх читання
+function toLocalStorage() {
+    localStorage.setItem('feedback-form-state', JSON.stringify(formData));
+}
+
+function fromLocalStorage() {
+    const currentData = localStorage.getItem('feedback-form-state');
+    if (currentData) {
+        formData = JSON.parse(currentData);
+        input.value = formData.email;
+        text.value = formData.message;
+    }
+}
+
+// Додаємо слухача події input для відстеження змін у формі та їх запису у сховище
 const form = document.querySelector('.feedback-form');
-const textarea = form.querySelector('textarea');
-
-//вішаємо прослуховувача на всю форму
-form.addEventListener('input', () => {
-  // console.log('hello');
-
-  //дістаємо два поля для зберігання
-  const formData = new FormData(form); //передаємо помічнику нашу форму
-  const email = formData.get('email').trim(); // помічник дістань мені email і видали зайві пробіли
-  const message = formData.get('message').trim(); //помічник дістань мені message і видали зайві пробіли
-  const data = { email, message };
-  //збережи мені до lokalStoredg
-  saveToLS('email', email);
-  saveToLS('message', message);
-  saveToLS('userInfo', data);
+form.addEventListener('input', (e) => {
+    formData[e.target.name] = e.target.value.trim();
+    toLocalStorage();
 });
 
-// window.addEventListener('DOMContentLoaded', () => {
-//   const email = loadFromLS('email');
-//   const message = loadFromLS('message');
-//   console.log(form.elements.email);
-//   form.elements.email.value = email || 'Anonymous';
-//   form.elements.message.value = message;
-// });
+// При завантаженні сторінки перевіряємо чи є дані у локальному сховищі та використовємо їх для заповнення форми
+window.addEventListener('DOMContentLoaded', fromLocalStorage);
 
-window.addEventListener('DOMContentLoaded', () => {
-  const data = loadFromLS('userInfo');
-  console.log(data);
-  form.elements.email.value = data?.email || '';
-  form.elements.message.value = data?.message || '';
+// Додаємо слухача події submit та обробляємо належним чином
+form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (formData.email === "" || formData.message === "") {
+        alert('Fill please all fields');
+    } else {     
+        console.log(formData); 
+        localStorage.removeItem('feedback-form-state');
+        formData = { email: "", message: "" };
+        form.reset();
+    }
 });
-
-form.addEventListener('submit', e => {
-  e.preventDefault();
-
-  const formData = new FormData(form);
-  const email = formData.get('email');
-  const message = formData.get('message');
-  const data = { email, message };
-  console.log(data);
-
-  if (data.email === '' || data.message === '') {
-    alert('Fill please all fields');
-  } else {
-    console.log(data);
-  }
-
-  localStorage.removeItem('email');
-  localStorage.removeItem('message');
-  localStorage.removeItem('userInfo');
-  form.reset();
-});
-
-function saveToLS(key, value) {
-  const jsonData = JSON.stringify(value);
-  localStorage.setItem(key, jsonData);
-}
-function loadFromLS(key) {
-  const json = localStorage.getItem(key);
-  try {
-    const data = JSON.parse(json);
-    return data;
-  } catch {
-    return json;
-  }
-}
